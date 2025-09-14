@@ -8,6 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="orders.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="orders.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DemoLibrary\DemoLibrary.csproj" />
   </ItemGroup>
 

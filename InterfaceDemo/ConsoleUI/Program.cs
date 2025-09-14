@@ -1,4 +1,10 @@
-﻿using DemoLibrary;
+﻿using DemoLibrary.Customer;
+using DemoLibrary.Product;
+using DemoLibrary.Price;
+using System.Net.Mail;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using System.Xml.Linq;
 
 namespace ConsoleUI
 {
@@ -6,43 +12,100 @@ namespace ConsoleUI
     {
         static void Main(string[] args)
         {
-            List<IProductModel> cart = AddSampleData();
-            CustomerModel customer = GetCustomer();
+            string filePath = "orders.json";
+            string json = File.ReadAllText(filePath);
 
-            foreach (IProductModel prod in cart)
+            using JsonDocument doc = JsonDocument.Parse(json);
+
+            List<CustomerModel> customers = new List<CustomerModel>();
+            List<PhysicalProductModel> physicalOrders = new List<PhysicalProductModel>();
+            List<DigitalProductModel> digitalOrders = new List<DigitalProductModel>();
+            foreach (var element in doc.RootElement.EnumerateArray())
             {
-                prod.ShipItem(customer);
-
-                if (prod is IDigitalProductModel digital)
+                CustomerModel customer = new CustomerModel
                 {
-                    Console.WriteLine($"For the {digital.Title} you have {digital.TotalDownloadsLeft} downloads left.");
+                    Name = element.GetProperty("Name").GetString(),
+                    City = element.GetProperty("City").GetString(),
+                    EmailAddress = element.GetProperty("EmailAddress").GetString(),
+                    IsVip = element.GetProperty("IsVip").GetBoolean()
+                };
+
+                customers.Add(customer);
+                var orderEl = element.GetProperty("Order");
+
+                if (element.GetProperty("Order").GetProperty("ProductType").GetString() == "PP")
+                {
+                    PhysicalProductModel ppm = new PhysicalProductModel
+                    {
+                        Title = orderEl.GetProperty("Title").GetString(),
+                        Price = orderEl.GetProperty("BasePrice").GetDecimal(),
+                        ID = orderEl.GetProperty("ID").GetString(),
+                        HasOrderBeenCompleted = orderEl.GetProperty("HasOrderBeenCompleted").GetBoolean()
+                    };
+
+                    physicalOrders.Add(ppm);
+                    ppm.ShipItem(customer);
+
+                    if (ppm.HasOrderBeenCompleted == false)
+                    {
+                        List<IPriceRule> rules = new List<IPriceRule>
+                        {
+                            new MemberTenOffRule(),
+                            new Category95Rule
+                            {
+                                category = orderEl.GetProperty("DiscountApplied").GetDecimal()
+                            },
+                            new Full200Minus20Rule(),
+                        };
+
+                        decimal finalPrice = ppm.Price;
+
+                        foreach (var rule in rules)
+                        {
+                            finalPrice = rule.Apply(finalPrice, ppm, customer);
+                        }
+
+                        Console.WriteLine($"ppm这次交易的总金额是{finalPrice}");
+                        Console.WriteLine("\n\n");
+                    }
+                }
+                else
+                {
+                    DigitalProductModel dpm = new DigitalProductModel
+                    {
+                        Title = orderEl.GetProperty("Title").GetString(),
+                        Price = orderEl.GetProperty("BasePrice").GetDecimal(),
+                        ID = orderEl.GetProperty("ID").GetString(),
+                        HasOrderBeenCompleted = orderEl.GetProperty("HasOrderBeenCompleted").GetBoolean()
+                    };
+
+                    digitalOrders.Add(dpm);
+                    dpm.ShipItem(customer);
+
+                    if(dpm.HasOrderBeenCompleted == false)
+                    {
+                        List<IPriceRule> rules = new List<IPriceRule>
+                        {
+                            new MemberTenOffRule(),
+                            new Category95Rule
+                            {
+                                category = orderEl.GetProperty("DiscountApplied").GetDecimal()
+                            },
+                            new Full200Minus20Rule(),
+                        };
+
+                        decimal finalPrice = dpm.Price;
+
+                        foreach (var rule in rules)
+                        {
+                            finalPrice = rule.Apply(finalPrice, dpm, customer);
+                        }
+
+                        Console.WriteLine($"dpm这次交易的总金额是{finalPrice}");
+                        Console.WriteLine("\n\n");
+                    }
                 }
             }
-
-            Console.ReadLine();
-        }
-
-        private static List<IProductModel> AddSampleData() 
-        {
-            List<IProductModel> output = new List<IProductModel>();
-
-            output.Add(new PhysicalProductModel { Title = "Nerf Football" }); ;
-            output.Add(new PhysicalProductModel { Title = "T-shirt" });
-            output.Add(new DigitalProductModel { Title = "Lesson Source Code" });
-            output.Add(new CourseProductModel { Title = ".NET Core" });
-
-            return output;
-        }
-
-        private static CustomerModel GetCustomer() 
-        {
-            return new CustomerModel
-            {
-                FirstName = "Tim",
-                LastName = "Corey",
-                City = "shanghai",
-                EmailAddress = "Coco@coco.com"
-            };
         }
     }
 }
