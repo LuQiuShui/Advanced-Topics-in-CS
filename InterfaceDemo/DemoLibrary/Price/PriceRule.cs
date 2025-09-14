@@ -22,7 +22,7 @@ namespace DemoLibrary.Price
     }
 
     // 特定类目95折
-    public class Category95Rule : IPriceRule
+    public class CategoryRule : IPriceRule
     {
         public decimal category;
 

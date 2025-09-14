@@ -51,7 +51,7 @@ namespace ConsoleUI
                         List<IPriceRule> rules = new List<IPriceRule>
                         {
                             new MemberTenOffRule(),
-                            new Category95Rule
+                            new CategoryRule
                             {
                                 category = orderEl.GetProperty("DiscountApplied").GetDecimal()
                             },
@@ -87,7 +87,7 @@ namespace ConsoleUI
                         List<IPriceRule> rules = new List<IPriceRule>
                         {
                             new MemberTenOffRule(),
-                            new Category95Rule
+                            new CategoryRule
                             {
                                 category = orderEl.GetProperty("DiscountApplied").GetDecimal()
                             },
