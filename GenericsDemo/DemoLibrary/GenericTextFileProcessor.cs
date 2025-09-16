@@ -55,18 +55,15 @@ namespace DemoLibrary
             {
                 throw new ArgumentNullException("data", "You must populate the data parameter with at least one value.");
             }
+
             var cols = data[0].GetType().GetProperties();
 
-            // Loops through each column and gets the name so it can comma 
-            // separate it into the header row.
             foreach (var col in cols)
             {
                 line.Append(col.Name);
                 line.Append(",");
             }
 
-            // Adds the column header entries to the first line (removing
-            // the last comma from the end first).
             lines.Add(line.ToString().Substring(0, line.Length - 1));
 
             foreach (var row in data)
@@ -79,8 +76,6 @@ namespace DemoLibrary
                     line.Append(",");
                 }
 
-                // Adds the row to the set of lines (removing
-                // the last comma from the end first).
                 lines.Add(line.ToString().Substring(0, line.Length - 1));
             }
 

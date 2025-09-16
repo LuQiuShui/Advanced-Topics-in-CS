@@ -17,23 +17,22 @@ namespace ConsoleUI
             Console.ReadLine();
         }
 
-        private static void JsonToList(List<Person> people,List<LogEntry> logs,string peopleJson, string logJson)
+        private static List<T> JsonToList<T>(string jsonfile) where T : class
         {
-            using JsonDocument doc = new JsonDocument();
+            string json = File.ReadAllText(jsonfile);
+            return JsonSerializer.Deserialize<List<T>>(json);
         }
 
         private static void DemonstrateTextFileStorage()
         {
-            List<Person> people = new List<Person>();
-            List<LogEntry> logs = new List<LogEntry>();
-
             string peopleFile = "people.csv";
             string logFile = "logs.csv";
 
             string peopleJson = "people.json";
             string logJson = "logs.json";
 
-            JsonToList(people, logs, peopleJson, logJson);
+            List<Person> people = JsonToList<Person>(peopleJson);
+            List<LogEntry> logs = JsonToList<LogEntry>(logJson);
 
             GenericTextFileProcessor.SaveToTextFile<Person>(people, peopleFile);
             GenericTextFileProcessor.SaveToTextFile<LogEntry>(logs, logFile);
