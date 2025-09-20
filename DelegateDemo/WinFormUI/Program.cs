@@ -1,4 +1,4 @@
-namespace WinFormsUI
+namespace WinFormUI
 {
     internal static class Program
     {
